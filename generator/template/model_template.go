@@ -168,6 +168,8 @@ func DefaultTableModelField(columnMetaData metadata.Column) TableModelField {
 		tags = append(tags, `sql:"primary_key"`)
 	}
 
+	tags = append(tags, ToJsonTag(columnMetaData.Name))
+	
 	return TableModelField{
 		Name: utils.ToGoIdentifier(columnMetaData.Name),
 		Type: getType(columnMetaData),
@@ -248,8 +250,10 @@ func getUserDefinedType(column metadata.Column) string {
 	switch column.DataType.Kind {
 	case metadata.EnumType:
 		return utils.ToGoIdentifier(column.DataType.Name)
-	case metadata.UserDefinedType, metadata.ArrayType:
+	case metadata.UserDefinedType:
 		return "string"
+	case metadata.ArrayType:
+		return "[]string"
 	}
 
 	return ""
@@ -324,4 +328,14 @@ func toGoType(column metadata.Column) interface{} {
 		fmt.Println("- [Model      ] Unsupported sql column '" + column.Name + " " + column.DataType.Name + "', using string instead.")
 		return ""
 	}
+}
+
+func ToJsonTag(tag string) string {
+	return fmt.Sprintf(`json:"%s"`, ToPascalCase(tag))
+}
+
+func ToPascalCase(stringToReplace string) string {
+	oldString := stringToReplace[0:1]
+	newString := strings.ToLower(oldString)
+	return strings.Replace(stringToReplace, oldString, newString, 1)
 }
