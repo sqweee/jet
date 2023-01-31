@@ -5,6 +5,8 @@ import (
 	"github.com/go-jet/jet/v2/generator/metadata"
 	"github.com/go-jet/jet/v2/internal/utils"
 	"github.com/google/uuid"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"path"
 	"reflect"
 	"strings"
@@ -169,7 +171,7 @@ func DefaultTableModelField(columnMetaData metadata.Column) TableModelField {
 	}
 
 	tags = append(tags, ToJsonTag(columnMetaData.Name))
-	
+
 	return TableModelField{
 		Name: utils.ToGoIdentifier(columnMetaData.Name),
 		Type: getType(columnMetaData),
@@ -335,7 +337,11 @@ func ToJsonTag(tag string) string {
 }
 
 func ToPascalCase(stringToReplace string) string {
-	oldString := stringToReplace[0:1]
-	newString := strings.ToLower(oldString)
-	return strings.Replace(stringToReplace, oldString, newString, 1)
+	//replace all _ to spaces and convert to title case, remove spaces and lowercase first character
+	title := cases.Title(language.English)
+	stringAsTitle := title.String(strings.ReplaceAll(stringToReplace, "_", " "))
+	stringWithOutSpaces := strings.ReplaceAll(stringAsTitle, " ", "")
+	firstCharacter := stringWithOutSpaces[0:1]
+	lowerCaseCharacter := strings.ToLower(firstCharacter)
+	return strings.Replace(stringWithOutSpaces, firstCharacter, lowerCaseCharacter, 1)
 }
